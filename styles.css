@@ -1,0 +1,82 @@
+/* Mind Loops — Service Worker
+   נותן: התקנה למסך הבית (PWA), עבודה offline, והצגת התראות תזכורת.
+   הערה: תזכורת אמיתית כשהאפליקציה סגורה תדרוש Web Push (VAPID) מצד שרת.
+*/
+
+const CACHE = "mlos-v1";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.webmanifest",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+// cache-first עבור same-origin GET, עם נפילה לרשת
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+  e.respondWith(
+    caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+      return res;
+    }).catch(() => caches.match("./index.html")))
+  );
+});
+
+// הדף מבקש להציג תזכורת דרך ה-SW (אמין יותר במובייל)
+self.addEventListener("message", (e) => {
+  const data = e.data || {};
+  if (data.type === "show-reminder") {
+    self.registration.showNotification(data.title || "Mind Loops", {
+      body: data.body || "5 דקות לגרסה הבאה שלך 🔁",
+      icon: "./icons/icon-192.png",
+      badge: "./icons/icon-192.png",
+      tag: "mlos-daily",
+      dir: "rtl",
+      lang: "he",
+      data: { url: "./index.html" },
+    });
+  }
+});
+
+// לחיצה על ההתראה → מיקוד/פתיחה של האפליקציה
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "./index.html";
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ("focus" in c) return c.focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
+});
+
+// תשתית ל-Web Push עתידי (פעיל רק כשיהיה שרת ששולח push)
+self.addEventListener("push", (e) => {
+  let payload = {};
+  try { payload = e.data ? e.data.json() : {}; } catch (_) { /* ignore */ }
+  self.registration.showNotification(payload.title || "Mind Loops", {
+    body: payload.body || "הגיע הזמן לאימון היומי 🔁",
+    icon: "./icons/icon-192.png",
+    badge: "./icons/icon-192.png",
+    tag: "mlos-daily",
+    dir: "rtl",
+    data: { url: "./index.html" },
+  });
+});
