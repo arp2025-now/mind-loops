@@ -642,6 +642,78 @@ body::after {
 .cal-sync { margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--line-2); }
 .cal-sync__title { font-size: 13px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 12px; line-height: 1.5; }
 
+/* ---------- "Come back tomorrow" banner (done screen) ---------- */
+.comeback {
+  display: inline-block;
+  margin: 14px auto 4px;
+  background: var(--accent-soft);
+  color: #0f766e;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 10px 20px;
+  border-radius: 99px;
+}
+
+/* ---------- Version label ---------- */
+.ver { font-size: 11px; font-weight: 700; color: var(--muted); opacity: 0.8; }
+
+/* ===================== Daily Mantra ===================== */
+.mantra-focus-wrap { text-align: center; margin-bottom: 16px; }
+.mantra-focus {
+  display: inline-block;
+  background: var(--primary-soft); color: var(--primary);
+  border: 1px solid rgba(2,132,199,0.2);
+  font-weight: 700; font-size: 14px;
+  padding: 8px 16px; border-radius: 99px;
+}
+.mantra-card {
+  background: linear-gradient(135deg, var(--primary-soft), var(--accent-soft));
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 34px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.mantra-card__quote { font-size: 25px; font-weight: 900; line-height: 1.5; color: #0c4a5e; }
+.mantra-orbs { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+.orb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--line-2);
+  transition: transform 0.2s ease, background 0.2s, border-color 0.2s;
+}
+.orb.is-on {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-color: transparent; transform: scale(1.15);
+  box-shadow: 0 4px 10px -3px rgba(2,132,199,0.5);
+}
+.mantra-card.is-complete {
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.25), var(--shadow);
+  animation: mantraPulse 1.3s ease-in-out infinite;
+}
+.mantra-card.is-complete .orb {
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+}
+@keyframes mantraPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+.mantra-say { margin-top: 20px; font-size: 18px; padding: 16px; }
+.mantra-say b { font-weight: 900; }
+.mantra-done { text-align: center; margin-top: 20px; }
+.mantra-done__title {
+  font-size: 21px; font-weight: 900;
+  background: linear-gradient(120deg, var(--primary), var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.mantra-done__sub { color: var(--muted); margin: 6px 0 16px; font-size: 15px; }
+
+/* mantra custom-edit link */
+.mantra-edit {
+  display: inline-block; margin-top: 10px;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-weight: 600; font-size: 13px; text-decoration: underline;
+}
+.mantra-edit:hover { color: var(--primary); }
+
 </style>
 </head>
 <body>
@@ -720,11 +792,15 @@ body::after {
   <!-- ===== App Shell ===== -->
   <template id="tpl-shell">
     <header class="topbar">
-      <div class="topbar__brand">🔁 <span>Mind Loops</span></div>
+      <div class="topbar__brand">🔁 <span>Mind Loops</span> <small class="ver" data-ver></small></div>
       <nav class="topbar__nav">
         <button class="navbtn" data-nav="daily">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
           <span>היום</span>
+        </button>
+        <button class="navbtn" data-nav="mantra">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 14.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>
+          <span>מנטרה</span>
         </button>
         <button class="navbtn" data-nav="gratitude">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
@@ -745,6 +821,7 @@ body::after {
       </nav>
       <div class="topbar__user">
         <span class="topbar__streak" title="ימים רצופים" data-streak>🔥 0</span>
+        <button class="bellbtn" data-refresh title="רענון לגרסה האחרונה">🔄</button>
         <button class="bellbtn" data-reminder-open title="תזכורת יומית">🔔<span class="bellbtn__dot" data-bell-dot hidden></span></button>
         <span class="topbar__name" data-username></span>
         <button class="linkbtn" data-logout>יציאה</button>
@@ -804,6 +881,7 @@ body::after {
 
   /* ----------------------------- Constants ----------------------------- */
 
+  const APP_VERSION = "1.4";                  // מוצג בראש האפליקציה לאימות גרסה
   const LS_SESSION = "mlos.session";          // אימייל המשתמש המחובר
   const userKey = (email) => `mlos.user.${email.toLowerCase()}`;
 
@@ -928,6 +1006,20 @@ body::after {
   ];
   const challengeTasksFor = (pattern) => CHALLENGE_TASKS[pattern] || CHALLENGE_DEFAULT;
 
+  // מנטרות יומיות — מותאמות למיקוד (דפוס), מותאמות מגדר
+  const MANTRAS = {
+    "השוואה לאחרים": { f: "אני נשארת במסלול שלי. ההשוואה לא שייכת לי.", m: "אני נשאר במסלול שלי. ההשוואה לא שייכת לי.", n: "להישאר במסלול שלי. ההשוואה לא שייכת לי." },
+    "דחיינות": { f: "אני מתחילה עכשיו — צעד אחד קטן מספיק.", m: "אני מתחיל עכשיו — צעד אחד קטן מספיק.", n: "להתחיל עכשיו — צעד אחד קטן מספיק." },
+    "פחד מתמחור": { f: "המחיר שלי משקף את הערך שאני נותנת.", m: "המחיר שלי משקף את הערך שאני נותן.", n: "המחיר משקף את הערך שאני נותן/ת." },
+    "דחיית שיחות מכירה": { f: "אני יוזמת בביטחון. יש לי מה לתת.", m: "אני יוזם בביטחון. יש לי מה לתת.", n: "ליזום בביטחון. יש לי מה לתת." },
+    "ספק עצמי": { f: "אני סומכת על עצמי, גם בלי ודאות.", m: "אני סומך על עצמי, גם בלי ודאות.", n: "לסמוך על עצמי, גם בלי ודאות." },
+    "פרפקציוניזם": { f: "מספיק טוב זה מצוין. אני משחררת ומתקדמת.", m: "מספיק טוב זה מצוין. אני משחרר ומתקדם.", n: "מספיק טוב זה מצוין. לשחרר ולהתקדם." },
+    "פחד מדחייה": { f: "'לא' לא מגדיר אותי. אני ממשיכה לבקש.", m: "'לא' לא מגדיר אותי. אני ממשיך לבקש.", n: "'לא' לא מגדיר אותי. להמשיך לבקש." },
+    "תסמונת המתחזה": { f: "אני שייכת לכאן. ההישגים שלי אמיתיים.", m: "אני שייך לכאן. ההישגים שלי אמיתיים.", n: "אני שייך/ת לכאן. ההישגים אמיתיים." },
+    "התפזרות / חוסר פוקוס": { f: "דבר אחד בכל פעם. אני בוחרת מיקוד.", m: "דבר אחד בכל פעם. אני בוחר מיקוד.", n: "דבר אחד בכל פעם. לבחור מיקוד." },
+    "פחד מחשיפה": { f: "אני מרשה לעצמי להיראות. הקול שלי חשוב.", m: "אני מרשה לעצמי להיראות. הקול שלי חשוב.", n: "להרשות לעצמי להיראות. הקול שלי חשוב." },
+  };
+
   /* ----------------------- Gender-aware text ---------------------------- */
   // מגדר נוכחי: 'f' נקבה · 'm' זכר · 'n' ניטרלי
   const G = () => (state.user && state.user.gender) || "f";
@@ -1032,6 +1124,8 @@ body::after {
           if (!Array.isArray(u.entries)) u.entries = [];
           if (!Array.isArray(u.gratitude)) u.gratitude = [];
           if (!Array.isArray(u.challenges)) u.challenges = [];
+          if (!Array.isArray(u.mantras)) u.mantras = [];
+          if (typeof u.customMantra !== "string") u.customMantra = "";
           if (!u.reminder) u.reminder = { enabled: false, time: "20:00" };
           if (!u.gender) u.gender = "f";
           if (typeof u.identity !== "string") u.identity = "";
@@ -1041,8 +1135,8 @@ body::after {
       }
       return {
         email, name: "", createdAt: todayKey(), gender: "f",
-        identity: "", onboardDone: false,
-        entries: [], gratitude: [], challenges: [],
+        identity: "", onboardDone: false, customMantra: "",
+        entries: [], gratitude: [], challenges: [], mantras: [],
         reminder: { enabled: false, time: "20:00" },
       };
     },
@@ -1103,6 +1197,9 @@ body::after {
     }
     return streak;
   }
+
+  // ניסוח רצף בעברית תקינה (יום אחד / N ימים)
+  const streakText = (n) => (n === 1 ? "יום אחד רצוף" : `${n} ימים רצופים`);
 
   // Pattern Tracker — ספירת דפוסים בחלון זמן (ברירת מחדל: 7 ימים)
   function patternStats(days = 7) {
@@ -1223,6 +1320,82 @@ body::after {
 
   const challengesDone = () =>
     state.user.challenges.filter((c) => c.status === "done").length;
+
+  /* ----------------------- Daily Mantra ------------------------------- */
+
+  // המיקוד הנוכחי: הדפוס החזק → אחרת הזהות → אחרת חיזוק כללי
+  function currentFocus() {
+    const top = patternStats(7)[0] || patternStats(3650)[0];
+    if (top && MANTRAS[top.name]) return { type: "pattern", label: top.name };
+    if (state.user.identity) return { type: "identity", label: state.user.identity };
+    return { type: "default", label: "" };
+  }
+
+  // המנטרה + תווית המיקוד (יציב לאורך היום)
+  function currentMantra() {
+    const f = currentFocus();
+    if (f.type === "pattern")
+      return { text: gx(MANTRAS[f.label]), focus: `הדפוס שמנהל אותך: ${f.label}` };
+    if (f.type === "identity")
+      return { text: gx({ f: `אני «${f.label}». זאת אני.`, m: `אני «${f.label}». זה אני.`, n: `«${f.label}» — זאת הזהות שלי.` }), focus: "הזהות שלך" };
+    const arr = affirmations();
+    return { text: arr[new Date().getDate() % arr.length], focus: "חיזוק כללי" };
+  }
+
+  // המנטרה הפעילה — מנטרה אישית אם הוגדרה, אחרת המומלצת לפי המיקוד
+  function activeMantra() {
+    const c = (state.user.customMantra || "").trim();
+    if (c) return { text: c, focus: "המנטרה שלך", custom: true };
+    return { ...currentMantra(), custom: false };
+  }
+
+  function setCustomMantra(text) {
+    state.user.customMantra = (text || "").trim();
+    Store.saveUser(state.user);
+    // עדכון מיידי של היום: מנטרה חדשה → סבב מתחיל מחדש
+    const rec = getMantraRec(todayKey());
+    if (rec) {
+      const am = activeMantra();
+      rec.mantra = am.text; rec.focus = am.focus; rec.count = 0;
+      Store.saveUser(state.user);
+    }
+  }
+
+  const getMantraRec = (date) =>
+    state.user.mantras.find((m) => m.date === date) || null;
+
+  // לחיצה אחת — מסמנת אמירה נוספת (עד 5 לסבב)
+  function tapMantra() {
+    const date = todayKey();
+    let rec = getMantraRec(date);
+    if (!rec) {
+      const cm = activeMantra();
+      rec = { date, mantra: cm.text, focus: cm.focus, count: 0, taps: 0, done: false };
+      state.user.mantras.push(rec);
+    }
+    if (rec.count < 5) { rec.count++; rec.taps++; }
+    if (rec.count >= 5) rec.done = true;
+    state.user.mantras.sort((a, b) => (a.date < b.date ? 1 : -1));
+    Store.saveUser(state.user);
+    return rec;
+  }
+
+  // סבב נוסף — מאפס את הספירה (היום נשאר "הושלם")
+  function resetMantraRound() {
+    const rec = getMantraRec(todayKey());
+    if (rec) { rec.count = 0; Store.saveUser(state.user); }
+  }
+
+  function mantraStreak() {
+    const done = new Set(state.user.mantras.filter((m) => m.done).map((m) => m.date));
+    let streak = 0, cursor = new Date();
+    if (!done.has(todayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+    while (done.has(todayKey(cursor))) { streak++; cursor.setDate(cursor.getDate() - 1); }
+    return streak;
+  }
+
+  const mantraTotal = () =>
+    state.user.mantras.reduce((s, m) => s + (m.taps || 0), 0);
 
   /* ---------------------------- Reminders ------------------------------ */
 
@@ -1443,6 +1616,43 @@ body::after {
     });
   }
 
+  /* ----- Custom mantra modal ----- */
+  function openMantraModal(onSaved) {
+    if ($(".modal-overlay")) return;
+    const cur = state.user.customMantra || "";
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal" role="dialog" aria-label="המנטרה שלי">
+        <button class="modal__close" data-close aria-label="סגירה">✕</button>
+        <div class="modal__icon">🔁</div>
+        <h2 class="modal__title">המנטרה שלי</h2>
+        <p class="modal__sub">כתבי משפט קצר, חיובי ובהווה — אותו תגידי 5 פעמים ביום.</p>
+        <label class="field">
+          <span>המנטרה שלי</span>
+          <textarea data-mantra-input placeholder="לדוגמה: אני בוחרת אומץ על פני נוחות.">${esc(cur)}</textarea>
+        </label>
+        <div class="step-actions">
+          ${cur ? `<button type="button" class="btn btn--ghost" data-mantra-clear>חזרה למומלצת</button>` : ""}
+          <button type="button" class="btn btn--primary" data-mantra-save>שמירה 🌟</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add("is-show"));
+    const close = () => { overlay.classList.remove("is-show"); setTimeout(() => overlay.remove(), 180); };
+    $("[data-close]", overlay).addEventListener("click", close);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    $("[data-mantra-save]", overlay).addEventListener("click", () => {
+      const v = $("[data-mantra-input]", overlay).value.trim();
+      if (!v) { toast("כתבי מנטרה — או חזרי למומלצת"); return; }
+      setCustomMantra(v); toast("המנטרה שלך נשמרה 🌟"); close(); if (onSaved) onSaved();
+    });
+    const clr = $("[data-mantra-clear]", overlay);
+    if (clr) clr.addEventListener("click", () => {
+      setCustomMantra(""); toast("חזרת למנטרה המומלצת"); close(); if (onSaved) onSaved();
+    });
+  }
+
   /* ----- Daily extras: North-star identity + micro-challenge ----- */
   function northStarHtml() {
     const id = state.user.identity;
@@ -1614,6 +1824,13 @@ body::after {
 
     $("[data-username]").textContent = state.user.name;
     $("[data-streak]").textContent = `🔥 ${computeStreak()}`;
+    const verEl = $("[data-ver]"); if (verEl) verEl.textContent = "v" + APP_VERSION;
+    const refreshBtn = $("[data-refresh]");
+    if (refreshBtn) refreshBtn.addEventListener("click", () => {
+      // טעינה מחדש שעוקפת cache — מביאה תמיד את הגרסה האחרונה
+      const base = location.href.split("?")[0].split("#")[0];
+      location.replace(base + "?v=" + Date.now());
+    });
     $("[data-reminder-open]").addEventListener("click", openReminderModal);
     updateBell();
     $("[data-logout]").addEventListener("click", () => {
@@ -1633,6 +1850,7 @@ body::after {
 
     const views = {
       daily: renderDaily,
+      mantra: renderMantra,
       gratitude: renderGratitude,
       patterns: renderPatterns,
       weekly: renderWeekly,
@@ -1841,7 +2059,8 @@ body::after {
       <div class="card done">
         <div class="done__emoji">✅</div>
         <div class="done__title">סיימת את האימון להיום</div>
-        <p class="done__sub">🔥 ${computeStreak()} ימים רצופים. נתראה מחר.</p>
+        <p class="done__sub">🔥 ${streakText(computeStreak())}</p>
+        <div class="comeback">🔁 ${gx({ f: "תחזרי מחר לתרגול הבא", m: "תחזור מחר לתרגול הבא", n: "נתראה מחר לתרגול הבא" })}</div>
         <div class="affirm-card">
           <div class="affirm-card__quote">“${esc(entry.affirmation)}”</div>
         </div>
@@ -1938,6 +2157,64 @@ body::after {
       toast("נשמר. תודה היא שריר — וכל יום מאמנים אותו 🌟");
       renderGratitude(root);
     });
+  }
+
+  /* ----- Daily Mantra ----- */
+  function renderMantra(root) {
+    const rec = getMantraRec(todayKey());
+    const am = activeMantra();
+    const mantraText = (rec && rec.mantra) ? rec.mantra : am.text;
+    const focus = (rec && rec.focus) ? rec.focus : am.focus;
+    const count = rec ? rec.count : 0;
+    const complete = count >= 5;
+
+    root.innerHTML = `
+      <div class="view-head">
+        <h2>המנטרה היומית</h2>
+        <p>להגיד בקול 5 פעמים — ולסמן כל אמירה. ✨</p>
+      </div>
+      <div class="mantra-focus-wrap">
+        <span class="mantra-focus">🎯 המיקוד שלך · ${esc(focus)}</span>
+        <button type="button" class="mantra-edit" data-mantra-edit>✎ מנטרה משלי</button>
+      </div>
+
+      <div class="mantra-card ${complete ? "is-complete" : ""}" data-mantra-card>
+        <div class="mantra-card__quote">“${esc(mantraText)}”</div>
+        <div class="mantra-orbs">
+          ${[0, 1, 2, 3, 4].map((i) => `<span class="orb ${i < count ? "is-on" : ""}"></span>`).join("")}
+        </div>
+      </div>
+
+      ${complete
+        ? `<div class="mantra-done">
+             <div class="mantra-done__title">5 מתוך 5 — מושלם! 🎉</div>
+             <p class="mantra-done__sub">${gx({ f: "המנטרה מושרשת בך היום. תחזרי מחר 🔁", m: "המנטרה מושרשת בך היום. תחזור מחר 🔁", n: "המנטרה מושרשת היום. נתראה מחר 🔁" })}</p>
+             <button type="button" class="btn btn--ghost btn--block" data-mantra-again>סבב נוסף 🔁</button>
+           </div>`
+        : `<button type="button" class="btn btn--primary btn--block mantra-say" data-mantra-tap>אמרתי <b>${count}/5</b> 🔁</button>`}
+
+      <div class="stat-row" style="margin-top:24px">
+        <div class="stat"><div class="stat__num">${mantraStreak()}</div><div class="stat__label">ימים רצופים ✨</div></div>
+        <div class="stat"><div class="stat__num">${mantraTotal()}</div><div class="stat__label">פעמים שנאמרו</div></div>
+        <div class="stat"><div class="stat__num">${state.user.mantras.filter((m) => m.done).length}</div><div class="stat__label">ימים שהושלמו</div></div>
+      </div>
+    `;
+
+    const tapBtn = $("[data-mantra-tap]", root);
+    if (tapBtn) tapBtn.addEventListener("click", () => {
+      const r = tapMantra();
+      if (r.count >= 5) {
+        if (navigator.vibrate) { try { navigator.vibrate([0, 35, 25, 35, 25, 70]); } catch (_) {} }
+        celebrate({ emoji: "💫", title: "5 פעמים! 🎉", sub: "המנטרה שלך מושרשת היום" });
+      } else if (navigator.vibrate) {
+        try { navigator.vibrate(18); } catch (_) {}
+      }
+      renderMantra(root);
+    });
+    const again = $("[data-mantra-again]", root);
+    if (again) again.addEventListener("click", () => { resetMantraRound(); renderMantra(root); });
+    const edit = $("[data-mantra-edit]", root);
+    if (edit) edit.addEventListener("click", () => openMantraModal(() => renderMantra(root)));
   }
 
   /* ----- Pattern Tracker ----- */
